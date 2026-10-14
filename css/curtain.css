@@ -1,0 +1,68 @@
+/* ── Curtain intro overlay ───────────────────────────────────────────────── */
+
+/* Lock scroll while the curtain is up */
+body.curtain-active { overflow: hidden; }
+
+#curtain-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* ── Panels ── */
+.curtain-panel {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: #000;
+    transition: transform 1s cubic-bezier(.77, 0, .18, 1);
+}
+
+.curtain-left  { left: 0;  transform: translateX(0); }
+.curtain-right { right: 0; transform: translateX(0); }
+
+/* When .is-open is added, panels slide away */
+#curtain-overlay.is-open .curtain-left  { transform: translateX(-100%); }
+#curtain-overlay.is-open .curtain-right { transform: translateX(100%);  }
+
+/* ── "Click me" text ── */
+.curtain-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;            /* above panels */
+
+    font-family: "Rubik Spray Paint", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #fff;
+    letter-spacing: .04em;
+    user-select: none;
+    -webkit-user-select: none;
+
+    /* gentle pulse */
+    animation: curtain-pulse 2.2s ease-in-out infinite;
+    transition: opacity .35s ease;
+}
+
+#curtain-overlay.is-open .curtain-text {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes curtain-pulse {
+    0%, 100% { opacity: .6; transform: scale(1); }
+    50%      { opacity: 1;  transform: scale(1.06); }
+}
+
+/* After animation ends, remove from flow entirely */
+#curtain-overlay.is-gone {
+    display: none;
+}
+
