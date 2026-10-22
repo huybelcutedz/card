@@ -9,24 +9,90 @@ body.curtain-active { overflow: hidden; }
     z-index: 99999;
     pointer-events: auto;
     cursor: pointer;
+    perspective: 1200px;     /* 3D depth for the fabric pull */
 }
 
-/* ── Panels ── */
+/* ── Curtain rod ── */
+#curtain-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2%;
+    right: -2%;
+    height: 14px;
+    background: linear-gradient(180deg, #2a2a2a, #111 60%, #1a1a1a);
+    border-bottom: 1px solid #333;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .7);
+    z-index: 10;
+}
+
+/* ── Fabric panels ── */
 .curtain-panel {
     position: absolute;
     top: 0;
-    width: 50%;
+    width: 51%;              /* slight overlap at seam */
     height: 100%;
-    background: #000;
-    transition: transform 1s cubic-bezier(.77, 0, .18, 1);
+    transform-origin: top;
+
+    /* Vertical fold texture — alternating dark shades simulate fabric draping */
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #0e0e0e  0px,
+            #080808  5px,
+            #121212 10px,
+            #060606 15px,
+            #101010 20px,
+            #0a0a0a 25px,
+            #0f0f0f 30px
+        );
+
+    transition: transform 2s cubic-bezier(.65, 0, .15, 1);
 }
 
-.curtain-left  { left: 0;  transform: translateX(0); }
-.curtain-right { right: 0; transform: translateX(0); }
+/* Inner edge shadow — depth at the centre seam where panels meet */
+.curtain-left {
+    left: 0;
+    transform: translateX(0) skewY(0deg);
+    box-shadow: inset -30px 0 50px -12px rgba(0, 0, 0, .8);
+}
 
-/* When .is-open is added, panels slide away */
-#curtain-overlay.is-open .curtain-left  { transform: translateX(-100%); }
-#curtain-overlay.is-open .curtain-right { transform: translateX(100%);  }
+.curtain-right {
+    right: 0;
+    transform: translateX(0) skewY(0deg);
+    box-shadow: inset 30px 0 50px -12px rgba(0, 0, 0, .8);
+}
+
+/* Bottom drape gradient — fabric darkens at floor level */
+.curtain-left::after,
+.curtain-right::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .35));
+    pointer-events: none;
+}
+
+/* ── Opening animation ────────────────────────────────────────────────────
+   Panels slide outward with a slight skew — the bottom trails behind the
+   top, just like real heavy curtains being pulled by a cord from above.
+── */
+#curtain-overlay.is-open .curtain-left {
+    transform: translateX(-105%) skewY(-2deg);
+}
+#curtain-overlay.is-open .curtain-right {
+    transform: translateX(105%) skewY(2deg);
+}
+
+/* Rod slides up and fades after curtains open */
+#curtain-overlay.is-open::before {
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: transform 1.2s .6s ease, opacity .8s 1s ease;
+}
 
 /* ── "Click me" text ── */
 .curtain-text {
@@ -35,7 +101,7 @@ body.curtain-active { overflow: hidden; }
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;            /* above panels */
+    z-index: 3;            /* above panels, below rod */
 
     font-family: "Rubik Spray Paint", system-ui;
     font-weight: 400;
@@ -43,12 +109,13 @@ body.curtain-active { overflow: hidden; }
     font-size: clamp(2rem, 6vw, 4rem);
     color: #fff;
     letter-spacing: .04em;
+    text-shadow: 0 0 20px rgba(255, 255, 255, .15);
     user-select: none;
     -webkit-user-select: none;
 
     /* gentle pulse */
     animation: curtain-pulse 2.2s ease-in-out infinite;
-    transition: opacity .35s ease;
+    transition: opacity 0s;
 }
 
 #curtain-overlay.is-open .curtain-text {
@@ -57,12 +124,11 @@ body.curtain-active { overflow: hidden; }
 }
 
 @keyframes curtain-pulse {
-    0%, 100% { opacity: .6; transform: scale(1); }
-    50%      { opacity: 1;  transform: scale(1.06); }
+    0%, 100% { opacity: .55; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.06); }
 }
 
 /* After animation ends, remove from flow entirely */
 #curtain-overlay.is-gone {
     display: none;
 }
-

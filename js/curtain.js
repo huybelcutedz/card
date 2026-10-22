@@ -16,7 +16,11 @@
             audio.play().catch(() => {});
         }
 
-        // 2. Trigger the curtain-open CSS animation
+        // 2. Hide "Click me" text instantly
+        const text = overlay.querySelector('.curtain-text');
+        if (text) text.style.display = 'none';
+
+        // 3. Trigger the curtain-open CSS animation
         overlay.classList.add('is-open');
 
         // 3. After the CSS transition finishes, remove overlay & unlock scroll
